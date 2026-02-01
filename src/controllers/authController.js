@@ -47,36 +47,57 @@ exports.login = async (req, res) => {
   try {
     const { mobile, password } = req.body;
 
-    const user = await User.findOne({ mobile });
+    const user = await User.findOne({ mobile })
+      .populate('apartmentId', 'name')
+      .populate('flatId', 'flatNumber');
+
     if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
 
     const token = jwt.sign(
       { userId: user._id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: '1d' }
     );
 
     res.json({
-      message: "Login successful",
+      message: 'Login successful',
       token,
       user: {
         id: user._id,
+        name: user.name,
+        mobile: user.mobile,
         role: user.role,
-        createdAt: user.createdAt
-      }
-    });
 
+        apartmentId: user.apartmentId
+          ? {
+            id: user.apartmentId._id,
+            name: user.apartmentId.name,
+          }
+          : null,
+
+        flatId: user.flatId
+          ? {
+            id: user.flatId._id,
+            flatNumber: user.flatId.flatNumber,
+          }
+          : null,
+
+        createdAt: user.createdAt,
+      },
+    });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({ error: error.message });
   }
 };
+
 
 
 /**
