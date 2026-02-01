@@ -35,8 +35,7 @@ app.use(cors({
     credentials: true
 }));
 
-// IMPORTANT: handle preflight
-app.options('*', cors());
+
 // middleware begin
 app.use(express.json());
 // middleware end
