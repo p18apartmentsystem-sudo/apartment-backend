@@ -28,7 +28,7 @@ const profileRoutes = require("./src/routes/profileRoutes");
 app.use(cors({
     origin: [
         'http://localhost:4200',
-        'https://apartment-frontend-one.vercel.app'
+        'https://p18-apartment-system.vercel.app/'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
