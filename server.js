@@ -25,8 +25,18 @@ const profileRoutes = require("./src/routes/profileRoutes");
 /* routes declaration end */
 
 
-app.use(cors());    // cors for connecting FE & BE
+app.use(cors({
+    origin: [
+        'http://localhost:4200',
+        'https://apartment-frontend-one.vercel.app'
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+}));
 
+// IMPORTANT: handle preflight
+app.options('*', cors());
 // middleware begin
 app.use(express.json());
 // middleware end
