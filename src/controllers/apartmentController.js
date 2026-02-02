@@ -8,12 +8,13 @@ const moment = require("moment");
  */
 exports.createApartment = async (req, res) => {
     try {
-        const { name, address } = req.body;
+        const { name, address, address_lg } = req.body;
 
         // 1️⃣ Create apartment
         const apartment = await Apartment.create({
             name,
             address,
+            address_lg,
             createdBy: req.user.userId,
             createdAt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
         });
@@ -76,7 +77,7 @@ exports.getApartmentById = async (req, res) => {
 exports.updateApartment = async (req, res) => {
     try {
 
-        const { name, address } = req.body;
+        const { name, address, address_lg } = req.body;
 
         const apartment = await Apartment.findOne({
             _id: req.params.id,
@@ -89,6 +90,7 @@ exports.updateApartment = async (req, res) => {
         apartment.isActive = true;
         if (name) apartment.name = name;
         if (address) apartment.address = address;
+        if (address_lg) apartment.address_lg = address_lg;
 
         apartment.updatedAt = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
 

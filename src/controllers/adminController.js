@@ -43,7 +43,7 @@ exports.getAllAdmins = async (req, res) => {
         const admins = await User.find({
             role: "apartment_admin",
         })
-            .populate("apartmentId", "name address") // adjust fields if needed
+            .populate("apartmentId", "name address address_lg") // adjust fields if needed
             .sort({ createdAt: -1 });
 
         res.json({ data: admins });
@@ -60,7 +60,7 @@ exports.getAdminById = async (req, res) => {
         const admin = await User.findOne({
             _id: req.params.id,
             role: "apartment_admin",
-        }).populate("apartmentId", "name address");
+        }).populate("apartmentId", "name address address_lg");
 
         if (!admin) {
             return res.status(404).json({ message: "Admin not found" });

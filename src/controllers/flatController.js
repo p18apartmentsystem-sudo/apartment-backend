@@ -48,7 +48,7 @@ exports.getFlatsByFlatAdmin = async (req, res) => {
         const flats = await Flat.find({
             flatAdminId: req.user.userId
         })
-            .populate("apartmentId", "name address")
+            .populate("apartmentId", "name address address_lg")
             .populate("flatAdminId", "name mobile");
 
         if (!flats.length) {

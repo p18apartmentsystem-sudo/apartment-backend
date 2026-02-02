@@ -10,6 +10,10 @@ const apartmentSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  address_lg: {
+    type: String,
+    default: null
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

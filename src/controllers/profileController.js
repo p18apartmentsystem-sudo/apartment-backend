@@ -10,7 +10,7 @@ exports.getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.userId)
       .select("name mobile role isActive apartmentId flatId createdAt email emailVerified")
-      .populate("apartmentId", "name address")
+      .populate("apartmentId", "name address address_lg")
       .populate("flatId", "flatNumber floor");
 
     if (!user) {
