@@ -4,6 +4,7 @@ const apartmentSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
+    uppercase: true,
     trim: true
   },
   address: {

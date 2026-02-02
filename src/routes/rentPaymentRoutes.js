@@ -19,7 +19,7 @@ router.post(
 router.get(
   "/flat",
   auth,
-  role("flat_admin"),
+  role("flat_admin", "resident"),
   controller.getFlatRentPayments
 );
 
@@ -43,7 +43,7 @@ router.get(
 router.get(
   "/:id",
   auth,
-  role("apartment_admin", "flat_admin"),
+  role("apartment_admin", "flat_admin", "resident"),
   controller.getRentPaymentById
 );
 

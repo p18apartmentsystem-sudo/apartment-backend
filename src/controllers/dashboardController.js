@@ -9,21 +9,27 @@ const LightBill = require("../models/LightBill");
 const Complaint = require("../models/Complaint");
 const ParkingSlot = require("../models/ParkingSlot");
 
+
+
+
 /**
  * =========================================================
  * FLAT DASHBOARD
  * role: flat_admin / resident
  * =========================================================
  */
+
 exports.getFlatDashboard = async (req, res) => {
   try {
     const flatId = req.user.flatId;
 
     if (!flatId) {
       return res.status(400).json({
+        code: "FLAT_NOT_ASSIGNED",
         message: "User is not assigned to any flat",
       });
     }
+
 
     // 1️⃣ Flat info
     const flat = await Flat.findById(flatId).select("flatNumber");
@@ -82,9 +88,11 @@ exports.getApartmentDashboard = async (req, res) => {
 
     if (!apartmentId) {
       return res.status(400).json({
-        message: "Apartment not assigned",
+        code: "APARTMENT_NOT_ASSIGNED",
+        message: "Apartment not assigned to this user",
       });
     }
+
 
     // 1️⃣ Total flats
     const totalFlats = await Flat.countDocuments({ apartmentId });
