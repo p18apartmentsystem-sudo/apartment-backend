@@ -13,6 +13,6 @@ router.put("/:id", auth, role("apartment_admin"), controller.updateFlat);
 router.delete("/:id", auth, role("apartment_admin"), controller.deleteFlat);
 router.post("/add_flat_admin", auth, role("apartment_admin"), controller.addFlatAdmin);
 router.put("/:flatId/update-flat-admin", auth, role("apartment_admin"), controller.updateFlatAdminByFlatId);
-router.get("/", auth, role("flat_admin"), controller.getFlatsByFlatAdmin);
+router.get("/", auth, role("flat_admin", "resident"), controller.getFlatsByFlatAdmin);
 
 module.exports = router;
