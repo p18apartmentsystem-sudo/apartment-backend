@@ -60,6 +60,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  emailVerifiedAt: {
+    type: String,
+    default: null
+  },
 });
 
 module.exports = mongoose.model("User", userSchema);

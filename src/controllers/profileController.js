@@ -2,7 +2,7 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const moment = require("moment");
 const EmailOtp = require("../models/EmailOtp");
-const { sendOtpEmail } = require("../utils/mailer");
+const { sendEmailOtp } = require("../services/email-otp.service");
 
 
 // GET MY PROFILE
@@ -40,65 +40,42 @@ exports.getProfile = async (req, res) => {
  * SEND EMAIL OTP
  */
 exports.sendEmailOtp = async (req, res) => {
-    try {
-        const { email } = req.body;
+  try {
+    const { email } = req.body;
 
-        if (!email) {
-            return res.status(400).json({ message: "Email is required" });
-        }
-
-        // 1️⃣ Check user exists
-        const user = await User.findOne({ email }).populate({
-            path: "apartmentId",
-            select: "name",
-        });
-
-        if (!user) {
-            return res.status(404).json({
-                message: "User with this email does not exist",
-            });
-        }
-
-        // 2️⃣ Determine apartment name
-        let apartmentName = "Apartment";
-
-        if (user.role === "super_admin") {
-            apartmentName = "P18";
-        } else if (user.apartmentId?.name) {
-            apartmentName = user.apartmentId.name;
-        }
-
-        // 3️⃣ Remove old OTPs
-        await EmailOtp.deleteMany({
-            email,
-            purpose: "verify_email",
-        });
-
-        // 4️⃣ Generate OTP
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-        // 5️⃣ Hash OTP
-        const otpHash = await bcrypt.hash(otp, 10);
-
-        // 6️⃣ Save OTP
-        await EmailOtp.create({
-            email,
-            otpHash,
-            purpose: "verify_email",
-            expiresAt: new Date(Date.now() + 5 * 60 * 1000),
-        });
-
-        // 7️⃣ Send email with apartment name
-        await sendOtpEmail(email, otp, apartmentName);
-
-        res.json({
-            message: "OTP sent to email successfully",
-        });
-
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
     }
+
+    const user = await User.findOne({ email }).populate({
+      path: "apartmentId",
+      select: "name",
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User with this email does not exist",
+      });
+    }
+
+    await sendEmailOtp({
+      email,
+      user,
+      purpose: "verify_email",
+    });
+
+    return res.json({
+      message: "OTP sent to email successfully",
+    });
+  } catch (err) {
+    console.error("VERIFY EMAIL OTP ERROR:", err);
+    return res.status(500).json({
+      message: "Unable to send OTP",
+    });
+  }
 };
+
+
 
 /**
  * VERIFY EMAIL OTP

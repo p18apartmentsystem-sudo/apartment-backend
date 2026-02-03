@@ -3,7 +3,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const moment = require("moment");
 const EmailOtp = require("../models/EmailOtp");
-const { sendOtpEmail } = require("../utils/mailer");
+const { sendEmailOtp } = require("../services/email-otp.service");
+
 
 // REGISTER
 exports.register = async (req, res) => {
@@ -111,7 +112,6 @@ exports.sendEmailOtp = async (req, res) => {
       return res.status(400).json({ message: "Email is required" });
     }
 
-    // 1️⃣ Check user exists
     const user = await User.findOne({ email }).populate({
       path: "apartmentId",
       select: "name",
@@ -123,46 +123,24 @@ exports.sendEmailOtp = async (req, res) => {
       });
     }
 
-    // 2️⃣ Determine apartment name
-    let apartmentName = "Apartment";
-
-    if (user.role === "super_admin") {
-      apartmentName = "P18";
-    } else if (user.apartmentId?.name) {
-      apartmentName = user.apartmentId.name;
-    }
-
-    // 3️⃣ Remove old OTPs
-    await EmailOtp.deleteMany({
+    await sendEmailOtp({
       email,
+      user,
       purpose: "reset_password",
     });
 
-    // 4️⃣ Generate OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-    // 5️⃣ Hash OTP
-    const otpHash = await bcrypt.hash(otp, 10);
-
-    // 6️⃣ Save OTP
-    await EmailOtp.create({
-      email,
-      otpHash,
-      purpose: "reset_password",
-      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
-    });
-
-    // 7️⃣ Send email with apartment name
-    await sendOtpEmail(email, otp, apartmentName);
-
-    res.json({
+    return res.json({
       message: "OTP sent to email successfully",
     });
-
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("RESET PASSWORD OTP ERROR:", err);
+    return res.status(500).json({
+      message: "Unable to send OTP",
+    });
   }
 };
+
+
 
 /**
  * VERIFY EMAIL OTP
