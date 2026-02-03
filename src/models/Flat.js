@@ -17,6 +17,11 @@ const flatSchema = new mongoose.Schema({
     required: true
   },
 
+  meterNumber: {
+    type: Number,
+    default: null
+  },
+
   rentAmount: {
     type: Number,
     required: true

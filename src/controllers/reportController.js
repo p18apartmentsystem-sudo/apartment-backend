@@ -98,7 +98,7 @@ exports.getPendingPayments = async (req, res) => {
     const pendingLight = await LightBill.find({
       apartmentId: req.user.apartmentId,
       status: "uploaded"
-    }).populate("flatId", "flatNumber");
+    }).populate("flatId", "flatNumber meterNumber");
 
     res.json({
       rent: pendingRent.map(r => ({
