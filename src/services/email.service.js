@@ -1,48 +1,44 @@
-const nodemailer = require("nodemailer");
+const SibApiV3Sdk = require("sib-api-v3-sdk");
+
+// Initialize Brevo client
+const client = SibApiV3Sdk.ApiClient.instance;
+client.authentications["api-key"].apiKey = process.env.BREVO_API_KEY;
+
+const tranEmailApi = new SibApiV3Sdk.TransactionalEmailsApi();
 
 /**
- * Create transporter fresh for every email (Render-safe)
+ * Send OTP Email using Brevo API
  */
-const createTransporter = async () => {
-    const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 587,
-        secure: false,
-        auth: {
-            user: process.env.SMTP_EMAIL,
-            pass: process.env.SMTP_APP_PASS,
-        },
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 10000,
-    });
-
-    await transporter.verify(); // IMPORTANT
-    return transporter;
-};
-
 exports.sendOtpEmail = async (to, otp, apartmentName) => {
-    const transporter = await createTransporter();
-
-    const mailOptions = {
-        from: `"${apartmentName}" <${process.env.SMTP_EMAIL}>`,
-        to,
-        subject: `${apartmentName} – OTP Verification`,
-        text: `
+  try {
+    await tranEmailApi.sendTransacEmail({
+      sender: {
+        email: process.env.EMAIL, 
+        name: apartmentName,
+      },
+      to: [
+        {
+          email: to,
+        },
+      ],
+      subject: `${apartmentName} – OTP Verification`,
+      textContent: `
 Hello,
 
-Your OTP for ${apartmentName} is:
+Your One Time Password (OTP) for ${apartmentName} is:
 
 ${otp}
 
 This OTP is valid for 5 minutes.
-Do not share it with anyone.
+Please do not share it with anyone.
 
 Thanks,
 ${apartmentName} Team
 -P18
 `,
-    };
-
-    await transporter.sendMail(mailOptions);
+    });
+  } catch (error) {
+    console.error("❌ BREVO EMAIL ERROR:", error?.response?.text || error);
+    throw error; // important so controller returns 500
+  }
 };
