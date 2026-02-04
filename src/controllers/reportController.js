@@ -92,7 +92,7 @@ exports.getPendingPayments = async (req, res) => {
   try {
     const pendingRent = await RentPayment.find({
       apartmentId: req.user.apartmentId,
-      status: "paid"
+      status: "uploaded"
     }).populate("flatId", "flatNumber");
 
     const pendingLight = await LightBill.find({

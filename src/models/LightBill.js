@@ -41,7 +41,7 @@ const lightBillSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: ["uploaded", "verified", "rejected"],
+    enum: ["uploaded", "paid", "rejected"],
     default: "uploaded"
   },
 

@@ -115,7 +115,7 @@ exports.getApartmentDashboard = async (req, res) => {
     // 5️⃣ Pending rent verification
     const pendingRent = await RentPayment.countDocuments({
       apartmentId,
-      status: "paid",
+      status: "uploaded",
     });
 
     // 6️⃣ Pending light bill verification

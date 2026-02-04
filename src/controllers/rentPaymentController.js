@@ -116,7 +116,7 @@ exports.getFlatRentPayments = async (req, res) => {
  */
 exports.verifyRent = async (req, res) => {
   try {
-    const { status } = req.body; // verified / rejected
+    const { status } = req.body; // paid / rejected
 
     const payment = await RentPayment.findByIdAndUpdate(
       req.params.id,
@@ -146,26 +146,50 @@ exports.verifyRent = async (req, res) => {
  */
 exports.getApartmentRentPayments = async (req, res) => {
   try {
+    // 🔐 Role check
     if (req.user.role !== "apartment_admin") {
       return res.status(403).json({ message: "Access denied" });
     }
 
-    const payments = await RentPayment.find({
-      apartmentId: req.params.apartmentId
-    })
+    // ✅ Status filter (default = uploaded)
+    const { status } = req.query;
+    const rentStatus = status || "uploaded";
+
+    // ✅ Validate allowed statuses
+    const allowedStatus = ["uploaded", "paid", "rejected"];
+    if (!allowedStatus.includes(rentStatus)) {
+      return res.status(400).json({
+        message: "Invalid rent status"
+      });
+    }
+
+    // 🔍 Query object
+    const query = {
+      apartmentId: req.params.apartmentId,
+      status: rentStatus
+    };
+
+    // 📦 Fetch payments
+    const payments = await RentPayment.find(query)
       .populate("flatId", "flatNumber")
       .populate("paidBy", "name mobile")
       .populate("verifiedBy", "name")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 }); // ⬅️ your existing month/year order remains
 
-    res.json({
+    return res.status(200).json({
+      status: "success",
+      count: payments.length,
       data: payments
     });
 
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({
+      message: "Failed to fetch rent payments",
+      error: err.message
+    });
   }
 };
+
 
 /**
  * GET RENT PAYMENT BY ID (apartment_admin)

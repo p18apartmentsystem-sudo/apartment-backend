@@ -46,8 +46,8 @@ const rentPaymentSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: ["paid", "verified", "rejected"],
-    default: "paid"
+    enum: ["uploaded", "paid", "rejected"],
+    default: "uploaded"
   },
 
   verifiedBy: {
