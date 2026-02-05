@@ -1,5 +1,8 @@
 const RentPayment = require("../models/RentPayment");
 const moment = require("moment");
+const mongoose = require("mongoose");
+
+
 
 /**
  * ADD RENT PAYMENT (flat_admin)
@@ -207,6 +210,111 @@ exports.getRentPaymentById = async (req, res) => {
     }
 
     res.json(payment);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * ADD RENT PAYMENT ("apartment_admin")
+ */
+exports.addRentPaymentByA_Admin = async (req, res) => {
+  try {
+    const { month, year, amount, refno } = req.body;
+    let { apartmentId, flatId } = req.body;
+    // 🧼 Remove accidental quotes
+    if (typeof apartmentId === 'string') {
+      apartmentId = apartmentId.replace(/"/g, '');
+    }
+    if (typeof flatId === 'string') {
+      flatId = flatId.replace(/"/g, '');
+    }
+    // ✅ Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(flatId)) {
+      return res.status(400).json({
+        message: 'Invalid flatId'
+      });
+    }
+    if (!mongoose.Types.ObjectId.isValid(apartmentId)) {
+      return res.status(400).json({
+        message: 'Invalid apartmentId'
+      });
+    }
+
+    const exists = await RentPayment.findOne({
+      flatId,
+      month,
+      year,
+    });
+
+    if (exists) {
+      return res.status(400).json({
+        message: "Rent already uploaded for this month"
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        message: "Payment proof is required"
+      });
+    }
+
+    const payment = await RentPayment.create({
+      apartmentId,
+      flatId,
+      paidBy: req.user.userId,
+      month,
+      year,
+      amount,
+      refno,
+      proofFile: req.file.path,
+      add_status: "apartment_admin",
+      status: "paid",
+      verifiedBy: req.user.userId,
+      createdAt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+    });
+
+    res.status(201).json({
+      message: "Rent payment uploaded",
+      payment: {
+        id: payment._id,
+        month,
+        year,
+        amount,
+        refno,
+        status: payment.status,
+        proofFile: payment.proofFile,
+        createdAt: payment.createdAt,
+      }
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * GET RENT PAYMENTS ADDED BY = "apartment_admin" (apartment_admin)
+ * View all rent proofs for apartment
+ */
+exports.getRentPaymentAddedByA_ADMIN = async (req, res) => {
+  try {
+    if (req.user.role !== "apartment_admin") {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const payments = await RentPayment.find({
+      apartmentId: req.params.apartmentId,
+      add_status: "apartment_admin"
+    })
+      .populate("flatId", "flatNumber")
+      .populate("paidBy", "name mobile")
+      .sort({ createdAt: -1 });
+
+    res.json({
+      data: payments
+    });
 
   } catch (err) {
     res.status(500).json({ error: err.message });

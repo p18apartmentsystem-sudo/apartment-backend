@@ -3,8 +3,8 @@ const User = require("../models/User");
 const FlatMemberMap = require("../models/FlatMemberMap");
 const bcrypt = require("bcryptjs");
 const moment = require("moment");
-const LightBill = require("../models/LightBill");
-const RentPayment = require("../models/RentPayment");
+const mongoose = require("mongoose");
+
 
 /**
  * ADD Flat
@@ -155,7 +155,6 @@ exports.deleteFlat = async (req, res) => {
             return res.status(404).json({ message: "Apartment not found" });
         }
 
-        flat.isActive = false;
         flat.updatedAt = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
 
         await flat.save();
@@ -309,3 +308,105 @@ exports.updateFlatAdminByFlatId = async (req, res) => {
     }
 };
 
+
+/**
+ * 1️⃣ GET ALL FLOORS BY APARTMENT
+ * GET /flats/apartment/:apartmentId/floors
+ */
+exports.getAllFloorByApartment = async (req, res) => {
+    try {
+        const { apartmentId } = req.params;
+
+        // ✅ Validate apartmentId
+        if (!mongoose.Types.ObjectId.isValid(apartmentId)) {
+            return res.status(400).json({ message: "Invalid apartmentId" });
+        }
+
+        // 🔍 Get distinct floors
+        const floors = await Flat.distinct("floor", {
+            apartmentId,
+            isOccupied: true
+        });
+
+        if (!floors.length) {
+            return res.status(404).json({ message: "No floors found" });
+        }
+
+        return res.status(200).json({
+            data: floors.sort((a, b) => a - b)
+        });
+
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+};
+
+/**
+ * 2️⃣ GET ALL FLATS BY APARTMENT + FLOOR
+ * GET /flats/apartment/:apartmentId/floor/:floor
+ */
+exports.getAllFlatsByApartmentFloor = async (req, res) => {
+    try {
+        const { apartmentId, floor } = req.params;
+
+        // ✅ Validate apartmentId
+        if (!mongoose.Types.ObjectId.isValid(apartmentId)) {
+            return res.status(400).json({ message: "Invalid apartmentId" });
+        }
+
+        // ✅ Validate floor
+        if (isNaN(floor)) {
+            return res.status(400).json({ message: "Invalid floor number" });
+        }
+
+        const flats = await Flat.find({
+            apartmentId,
+            floor: Number(floor),
+            isOccupied: true
+        }).populate(
+            "flatAdminId",
+            "name mobile email"
+        );
+
+        if (!flats.length) {
+            return res.status(404).json({ message: "No flats found for this floor" });
+        }
+
+        return res.status(200).json({
+            count: flats.length,
+            data: flats
+        });
+
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+};
+
+/**
+ * GET Single FLAT BY ID
+ * GET /flats/:id
+ */
+exports.getFlatById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // ✅ Validate flatId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid flatId" });
+    }
+
+    const flat = await Flat.findById(id)
+      .populate("flatAdminId", "name mobile email");
+
+    if (!flat) {
+      return res.status(404).json({ message: "Flat not found" });
+    }
+
+    return res.status(200).json({
+      data: flat   // ✅ object (correct)
+    });
+
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};

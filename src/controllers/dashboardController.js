@@ -36,8 +36,7 @@ exports.getFlatDashboard = async (req, res) => {
 
     // 2️⃣ Members count
     const membersCount = await FlatMemberMap.countDocuments({
-      flatId,
-      isActive: true,
+      flatId
     });
 
     // 3️⃣ Vehicles count

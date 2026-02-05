@@ -48,11 +48,6 @@ const flatSchema = new mongoose.Schema({
     default: null
   },
 
-  isActive: {
-    type: Boolean,
-    default: false
-  },
-
 
 });
 

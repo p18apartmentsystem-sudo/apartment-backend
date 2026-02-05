@@ -15,4 +15,9 @@ router.post("/add_flat_admin", auth, role("apartment_admin"), controller.addFlat
 router.put("/:flatId/update-flat-admin", auth, role("apartment_admin"), controller.updateFlatAdminByFlatId);
 router.get("/", auth, role("flat_admin", "resident"), controller.getFlatsByFlatAdmin);
 
+router.get("/apartment/:apartmentId/floors", auth, role("apartment_admin"), controller.getAllFloorByApartment);
+router.get("/apartment/:apartmentId/floor/:floor", auth, role("apartment_admin"), controller.getAllFlatsByApartmentFloor);
+router.get("/flat/:id", auth, role("apartment_admin"), controller.getFlatById);
+
+
 module.exports = router;

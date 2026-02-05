@@ -21,8 +21,7 @@ exports.getFlatReport = async (req, res) => {
     for (const flat of flats) {
       // 1️⃣ Flat members count
       const membersCount = await FlatMemberMap.countDocuments({
-        flatId: flat._id,
-        isActive: true
+        flatId: flat._id
       });
 
       // 2️⃣ Vehicles count
