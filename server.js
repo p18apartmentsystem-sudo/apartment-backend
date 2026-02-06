@@ -24,6 +24,7 @@ const complaintRoutes = require("./src/routes/complaintRoutes");
 const dashboardRoutes = require("./src/routes/dashboardRoutes");
 const reportRoutes = require("./src/routes/reportRoutes");
 const profileRoutes = require("./src/routes/profileRoutes");
+const inventoryRoutes = require("./src/routes/inventoryRoutes");
 
 /* =======================
    CORS CONFIG
@@ -63,6 +64,7 @@ app.use("/api/complaints", complaintRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/profile", profileRoutes);
+app.use("/api/inventory", inventoryRoutes);
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
