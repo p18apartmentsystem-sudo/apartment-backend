@@ -36,7 +36,7 @@ const rentPaymentSchema = new mongoose.Schema({
 
   refno: {
     type: String, // Jan - Dec
-    required: true
+    default: null
   },
   
   proofFile: {
