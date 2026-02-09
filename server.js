@@ -25,6 +25,9 @@ const dashboardRoutes = require("./src/routes/dashboardRoutes");
 const reportRoutes = require("./src/routes/reportRoutes");
 const profileRoutes = require("./src/routes/profileRoutes");
 const inventoryRoutes = require("./src/routes/inventoryRoutes");
+const pushTokenRoutes = require('./src/routes/push-token.routes');
+
+
 
 /* =======================
    CORS CONFIG
@@ -65,6 +68,9 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/inventory", inventoryRoutes);
+app.use('/api/push-token', pushTokenRoutes);
+
+
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
