@@ -11,4 +11,13 @@ router.post(
   pushTokenController.savePushToken
 );
 
+
+// Disable token on logout
+router.post(
+  '/disable',
+  authMiddleware,
+  pushTokenController.disablePushToken
+);
+
+
 module.exports = router;

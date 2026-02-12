@@ -26,6 +26,7 @@ const reportRoutes = require("./src/routes/reportRoutes");
 const profileRoutes = require("./src/routes/profileRoutes");
 const inventoryRoutes = require("./src/routes/inventoryRoutes");
 const pushTokenRoutes = require('./src/routes/push-token.routes');
+const notificationRoutes = require('./src/routes/notificationRoutes');
 
 
 
@@ -69,7 +70,7 @@ app.use("/api/reports", reportRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use('/api/push-token', pushTokenRoutes);
-
+app.use('/api/notification', notificationRoutes);
 
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
