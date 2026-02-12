@@ -69,53 +69,51 @@ exports.sendToUser = async (req, res) => {
   try {
     const { userId, title, body, data } = req.body;
 
-    if (!userId || !title || !body) {
+    if (!userId) {
       return res.status(400).json({
         success: false,
-        message: 'userId, title and body are required',
+        message: 'User ID is required'
       });
     }
 
-    const tokens = await PushToken.find({
+    // 🔥 Only MOBILE tokens
+    const pushTokens = await PushToken.find({
       userId,
       isActive: true,
+      platform: { $in: ['android', 'ios'] }
     });
 
-    if (!tokens.length) {
+    if (!pushTokens.length) {
       return res.status(404).json({
         success: false,
-        message: 'No active tokens found',
+        message: 'No active mobile tokens found'
       });
     }
 
-    const fcmTokens = tokens.map(t => t.token);
+    const tokens = pushTokens.map(t => t.token);
 
-    const response = await admin.messaging().sendEachForMulticast({
-      tokens: fcmTokens,
-      notification: { title, body },
+    const message = {
+      notification: {
+        title,
+        body
+      },
       data: data || {},
-    });
+      tokens
+    };
 
-    response.responses.forEach(async (resp, index) => {
-      if (!resp.success) {
-        await PushToken.updateOne(
-          { token: fcmTokens[index] },
-          { isActive: false }
-        );
-      }
-    });
+    const response = await admin.messaging().sendEachForMulticast(message);
 
     return res.json({
       success: true,
-      sent: response.successCount,
-      failed: response.failureCount,
+      message: 'Notification sent to mobile only',
+      successCount: response.successCount
     });
 
   } catch (error) {
-    console.error('Send User Notification Error:', error);
+    console.error('Send Notification Error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Internal server error',
+      message: 'Internal server error'
     });
   }
 };
