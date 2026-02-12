@@ -2,7 +2,7 @@ const admin = require('../config/firebase');
 const PushToken = require('../models/push-token.model');
 
 
-// 🔔 Send notification to SINGLE USER (MOBILE ONLY)
+// 🔔 Send notification to SINGLE USER (Mobile Only - DATA ONLY)
 exports.sendToUser = async (req, res) => {
   try {
     const { userId, title, body, data } = req.body;
@@ -14,7 +14,7 @@ exports.sendToUser = async (req, res) => {
       });
     }
 
-    // 🔥 Only MOBILE tokens
+    // Only active MOBILE tokens
     const pushTokens = await PushToken.find({
       userId,
       isActive: true,
@@ -30,19 +30,19 @@ exports.sendToUser = async (req, res) => {
 
     const tokens = pushTokens.map(t => t.token);
 
-    // ✅ DATA ONLY MESSAGE (IMPORTANT)
+    // ✅ DATA ONLY MESSAGE (NO notification object)
     const message = {
       tokens,
       data: {
-        title,
-        body,
-        route: data?.route || '/dashboard'
+        title: String(title),
+        body: String(body),
+        route: data?.route ? String(data.route) : '/'
       }
     };
 
     const response = await admin.messaging().sendEachForMulticast(message);
 
-    // 🔥 Disable invalid tokens
+    // Disable invalid tokens automatically
     response.responses.forEach(async (resp, index) => {
       if (!resp.success) {
         await PushToken.updateOne(
@@ -66,8 +66,6 @@ exports.sendToUser = async (req, res) => {
     });
   }
 };
-
-
 
 // 🔔 Send notification to ENTIRE APARTMENT (MOBILE ONLY)
 exports.sendToApartment = async (req, res) => {
