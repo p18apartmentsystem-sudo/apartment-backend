@@ -159,6 +159,7 @@ exports.broadcastToApartment = async (req, res) => {
       raisedBy: req.user.userId,
       type: "broadcast",
       title,
+      category: title,
       description: body,
       createdAt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
     });
