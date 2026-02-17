@@ -25,7 +25,7 @@ router.get(
 router.get(
   "/my",
   auth,
-  role("resident"),
+  role("flat_admin", "resident"),
   controller.getMyComplaints
 );
 
@@ -35,6 +35,22 @@ router.put(
   auth,
   role("apartment_admin"),
   controller.updateComplaintStatus
+);
+
+// broadcastToApartment (apartment_admin)
+router.post(
+  "/broadcast",
+  auth,
+  role("apartment_admin"),
+  controller.broadcastToApartment
+);
+
+// get complaints of apartment (apartment_admin)
+router.get(
+  "/apartment",
+  auth,
+  role("apartment_admin"),
+  controller.getAllApartmentComplaints
 );
 
 module.exports = router;

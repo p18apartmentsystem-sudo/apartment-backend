@@ -1,5 +1,8 @@
 const Complaint = require("../models/Complaint");
 const moment = require("moment");
+const NotificationService = require("../services/notification.service");
+
+
 
 /**
  * RAISE COMPLAINT (resident / flat_admin)
@@ -17,6 +20,20 @@ exports.raiseComplaint = async (req, res) => {
       createdAt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
     });
 
+    // 🔥 Fetch flat details to get flat number
+    const populatedComplaint = await Complaint.findById(complaint._id)
+      .populate("flatId", "flatNumber");
+
+    const flatNumber = populatedComplaint.flatId?.flatNumber || "Unknown";
+
+    // 🔔 SEND NOTIFICATION TO APARTMENT ADMIN
+    await NotificationService.flatToApartment(
+      req.user.apartmentId,
+      "🚨 New Complaint Raised",
+      `New ${category} complaint from flat ${flatNumber}`,
+      "/apartment/updates"
+    );
+
     res.status(201).json({
       message: "Complaint raised successfully",
       complaint: {
@@ -32,6 +49,7 @@ exports.raiseComplaint = async (req, res) => {
   }
 };
 
+
 /**
  * GET COMPLAINTS OF FLAT (flat_admin)
  */
@@ -39,7 +57,8 @@ exports.getFlatComplaints = async (req, res) => {
   try {
     const complaints = await Complaint.find({
       flatId: req.user.flatId
-    }).populate("raisedBy", "name mobile");
+    }).populate("raisedBy", "name mobile")
+      .sort({ resolvedAt: -1, createdAt: -1 });
 
     res.json(complaints);
 
@@ -47,6 +66,25 @@ exports.getFlatComplaints = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+/**
+ * GET COMPLAINTS OF FLAT (apartment_admin)
+ */
+exports.getAllApartmentComplaints = async (req, res) => {
+  try {
+    const complaints = await Complaint.find({
+      apartmentId: req.user.apartmentId
+    }).populate("raisedBy", "name mobile")
+      .populate("flatId", "flatNumber floor")
+      .sort({ createdAt: -1 });
+
+    res.json(complaints);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 
 /**
  * GET MY COMPLAINTS (resident)
@@ -60,20 +98,20 @@ exports.getMyComplaints = async (req, res) => {
     res.json(complaints);
 
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message })
+      .sort({ resolvedAt: -1, createdAt: -1 });
   }
 };
+
 
 /**
  * UPDATE COMPLAINT STATUS (apartment_admin)
  */
 exports.updateComplaintStatus = async (req, res) => {
   try {
-    const { status } = req.body; // in_progress / resolved
+    const { status } = req.body;
 
-    const updateData = {
-      status
-    };
+    const updateData = { status };
 
     if (status === "resolved") {
       updateData.resolvedBy = req.user.userId;
@@ -90,6 +128,16 @@ exports.updateComplaintStatus = async (req, res) => {
       return res.status(404).json({ message: "Complaint not found" });
     }
 
+    // 🔔 IF RESOLVED → SEND NOTIFICATION BACK TO USER
+    if (status === "resolved") {
+      await NotificationService.apartmentToFlat(
+        complaint.raisedBy,
+        "✅ Complaint Resolved",
+        "Your complaint has been resolved",
+        "/apartment/updates"
+      );
+    }
+
     res.json({
       message: `Complaint marked as ${status}`
     });
@@ -98,3 +146,37 @@ exports.updateComplaintStatus = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+/**
+ * BROADCAT To APARTMENT (apartment_admin)
+ */
+exports.broadcastToApartment = async (req, res) => {
+  try {
+    const { title, body } = req.body;
+
+    const broadcast = await Complaint.create({
+      apartmentId: req.user.apartmentId,
+      raisedBy: req.user.userId,
+      type: "broadcast",
+      title,
+      description: body,
+      createdAt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+    });
+
+    await NotificationService.apartmentToApartment(
+      req.user.apartmentId,
+      title,
+      body,
+      "/apartment/updates"
+    );
+
+    res.json({
+      success: true,
+      data: broadcast
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+

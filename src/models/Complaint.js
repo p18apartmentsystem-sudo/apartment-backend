@@ -10,7 +10,7 @@ const complaintSchema = new mongoose.Schema({
   flatId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Flat",
-    required: true
+    default: null
   },
 
   raisedBy: {
@@ -19,15 +19,27 @@ const complaintSchema = new mongoose.Schema({
     required: true
   },
 
+  // 🔥 NEW FIELD
+  type: {
+    type: String,
+    enum: ["complaint", "broadcast"],
+    default: "complaint"
+  },
+
   category: {
     type: String,
     enum: ["water", "electricity", "parking", "lift", "noise", "other"],
-    required: true
+    default: "other"
+  },
+
+  title: {                 // 🔥 for broadcast
+    type: String,
+    default: null
   },
 
   description: {
     type: String,
-    required: true
+    default: null
   },
 
   status: {
@@ -43,20 +55,21 @@ const complaintSchema = new mongoose.Schema({
   },
 
   resolvedAt: {
-    type: String,
-    required: true
+    type: Date,
+    default: null
   },
 
   createdAt: {
     type: String,
     required: true
   }
+
 });
 
-
+// Indexes
 complaintSchema.index({ apartmentId: 1, status: 1 });
 complaintSchema.index({ flatId: 1 });
 complaintSchema.index({ raisedBy: 1 });
-
+complaintSchema.index({ type: 1 });
 
 module.exports = mongoose.model("Complaint", complaintSchema);
