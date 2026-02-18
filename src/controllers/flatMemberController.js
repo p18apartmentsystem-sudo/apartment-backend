@@ -25,14 +25,14 @@ exports.addFlatMember = async (req, res) => {
             apartmentId,
             flatId,
             email,
-            createdAt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+            createdAt: moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss")
         });
 
         const map = await FlatMemberMap.create({
             apartmentId,
             flatId,
             userId: user._id,
-            joinedAt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+            joinedAt: moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss")
         });
 
         res.status(201).json({
@@ -57,7 +57,7 @@ exports.removeFlatMember = async (req, res) => {
     try {
         const map = await FlatMemberMap.findOneAndUpdate(
             { userId: req.params.userId, isActive: true },
-            { isActive: false, leftAt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss") },
+            { isActive: false, leftAt: moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss") },
             { new: true }
         );
 

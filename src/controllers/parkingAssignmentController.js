@@ -11,7 +11,7 @@ exports.assignParking = async (req, res) => {
         // deactivate old assignment
         await ParkingAssignmentMap.updateMany(
             { parkingSlotId, isActive: true },
-            { isActive: false, unassignedAt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss") }
+            { isActive: false, unassignedAt: moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss") }
         );
 
         const assign = await ParkingAssignmentMap.create({
@@ -19,7 +19,7 @@ exports.assignParking = async (req, res) => {
             parkingSlotId,
             flatId,
             assignedBy: req.user.userId,
-            assignedAt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+            assignedAt: moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss")
         });
 
         res.json({

@@ -16,7 +16,7 @@ exports.createApartment = async (req, res) => {
             address,
             address_lg,
             createdBy: req.user.userId,
-            createdAt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+            createdAt: moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss")
         });
 
         // 2️⃣ ASSIGN apartment to apartment_admin (IMPORTANT)
@@ -92,7 +92,7 @@ exports.updateApartment = async (req, res) => {
         if (address) apartment.address = address;
         if (address_lg) apartment.address_lg = address_lg;
 
-        apartment.updatedAt = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+        apartment.updatedAt = moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss");
 
         await apartment.save();
 
@@ -118,7 +118,7 @@ exports.deleteApartment = async (req, res) => {
         }
 
         apartment.isActive = false;
-        apartment.updatedAt = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+        apartment.updatedAt = moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss");
 
         await apartment.save();
 

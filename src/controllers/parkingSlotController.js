@@ -13,7 +13,7 @@ exports.addParkingSlot = async (req, res) => {
             side,
             name,
             slotNumber,
-            createdAt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+            createdAt: moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss")
         });
 
         res.status(201).json({
@@ -40,7 +40,7 @@ exports.bulkAddParkingSlots = async (req, res) => {
                 side,
                 name,
                 slotNumber: i,
-                createdAt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+                createdAt: moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss")
             });
         }
 

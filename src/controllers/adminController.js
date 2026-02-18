@@ -22,7 +22,7 @@ exports.addAdmin = async (req, res) => {
             mobile,
             password: hashedPassword,
             role: "apartment_admin",
-            createdAt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss"),
+            createdAt: moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss"),
         });
 
         res.status(201).json({
@@ -92,7 +92,7 @@ exports.updateAdminById = async (req, res) => {
         if (mobile) admin.mobile = mobile;
         if(email) admin.email = email;
 
-        admin.updatedAt = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+        admin.updatedAt = moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss");
 
         await admin.save();
 
@@ -117,7 +117,7 @@ exports.deleteAdminById = async (req, res) => {
         }
 
         admin.isActive = false;
-        admin.updatedAt = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+        admin.updatedAt = moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss");
 
         await admin.save();
 

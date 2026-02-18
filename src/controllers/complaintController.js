@@ -17,7 +17,7 @@ exports.raiseComplaint = async (req, res) => {
       raisedBy: req.user.userId,
       category,
       description,
-      createdAt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+      createdAt: moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss")
     });
 
     // 🔥 Fetch flat details to get flat number
@@ -68,7 +68,7 @@ exports.getFlatComplaints = async (req, res) => {
 };
 
 /**
- * GET COMPLAINTS OF FLAT (apartment_admin)
+ * GET COMPLAINTS OF APARTMENT (apartment_admin)
  */
 exports.getAllApartmentComplaints = async (req, res) => {
   try {
@@ -115,7 +115,7 @@ exports.updateComplaintStatus = async (req, res) => {
 
     if (status === "resolved") {
       updateData.resolvedBy = req.user.userId;
-      updateData.resolvedAt = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+      updateData.resolvedAt = moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss");
     }
 
     const complaint = await Complaint.findByIdAndUpdate(
@@ -161,7 +161,7 @@ exports.broadcastToApartment = async (req, res) => {
       title,
       category: title,
       description: body,
-      createdAt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+      createdAt: moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss")
     });
 
     await NotificationService.apartmentToApartment(
@@ -181,3 +181,27 @@ exports.broadcastToApartment = async (req, res) => {
   }
 };
 
+/**
+ * GET BROADCAST OF APARTMENT (apartment_admin)
+ */
+exports.getApartmentBroadCast = async (req, res) => {
+  try {
+    // 🔥 EXACT 24 hours ago from now
+    const last24Hours = moment()
+      .subtract(24, "hours")
+      .format("YYYY-MM-DD HH:mm:ss");
+
+    const broadcasts = await Complaint.find({
+      apartmentId: req.user.apartmentId,
+      type: "broadcast",
+      createdAt: { $gte: last24Hours }   // 🔥 string comparison
+    })
+      .populate("raisedBy", "name mobile")
+      .sort({ createdAt: -1 });
+
+    res.json({ data: broadcasts });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

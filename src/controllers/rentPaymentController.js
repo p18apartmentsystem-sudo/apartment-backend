@@ -38,7 +38,7 @@ exports.addRentPayment = async (req, res) => {
       amount,
       refno,
       proofFile: req.file.path,
-      createdAt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+      createdAt: moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss")
     });
 
     res.status(201).json({
@@ -272,7 +272,7 @@ exports.addRentPaymentByA_Admin = async (req, res) => {
       add_status: "apartment_admin",
       status: "paid",
       verifiedBy: req.user.userId,
-      createdAt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+      createdAt: moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss")
     });
 
     res.status(201).json({

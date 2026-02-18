@@ -29,7 +29,7 @@ exports.uploadLightBill = async (req, res) => {
       year,
       amount,
       billFile: req.file.path,
-      createdAt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+      createdAt: moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss")
     });
 
     res.status(201).json({

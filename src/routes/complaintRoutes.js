@@ -53,4 +53,12 @@ router.get(
   controller.getAllApartmentComplaints
 );
 
+// get broadcast of apartment (flat_admin, resident)
+router.get(
+  "/apartment-broadcast",
+  auth,
+  role("flat_admin", "resident"),
+  controller.getApartmentBroadCast
+);
+
 module.exports = router;

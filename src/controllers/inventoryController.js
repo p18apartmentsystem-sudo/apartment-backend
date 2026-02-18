@@ -25,7 +25,7 @@ exports.addInventory = async (req, res) => {
             quantity,
             description,
             addedBy: req.user.userId,
-            addedAt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+            addedAt: moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss")
         });
 
         res.status(201).json({

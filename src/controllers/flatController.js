@@ -18,7 +18,7 @@ exports.addFlat = async (req, res) => {
             floor,
             rentAmount,
             meterNumber,
-            createdAt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+            createdAt: moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss")
         });
         res.status(201).json({ message: "Flat added", flat });
     } catch (err) {
@@ -127,7 +127,7 @@ exports.updateFlat = async (req, res) => {
         }
 
         flat.isActive = true;
-        flat.updatedAt = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+        flat.updatedAt = moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss");
         if (flatNumber) flat.flatNumber = flatNumber;
         if (floor) flat.floor = floor;
         if (rentAmount) flat.rentAmount = rentAmount;
@@ -155,7 +155,7 @@ exports.deleteFlat = async (req, res) => {
             return res.status(404).json({ message: "Apartment not found" });
         }
 
-        flat.updatedAt = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+        flat.updatedAt = moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss");
 
         await flat.save();
 

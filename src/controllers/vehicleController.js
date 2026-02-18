@@ -35,7 +35,7 @@ exports.addVehicle = async (req, res) => {
             userId: resident._id,
             vehicleType,
             vehicleNumber,
-            createdAt: moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+            createdAt: moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss")
         });
 
         res.status(201).json({
