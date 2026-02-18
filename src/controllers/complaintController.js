@@ -56,7 +56,8 @@ exports.raiseComplaint = async (req, res) => {
 exports.getFlatComplaints = async (req, res) => {
   try {
     const complaints = await Complaint.find({
-      flatId: req.user.flatId
+      flatId: req.user.flatId,
+      isActive: true,
     }).populate("raisedBy", "name mobile")
       .sort({ resolvedAt: -1, createdAt: -1 });
 
@@ -73,7 +74,8 @@ exports.getFlatComplaints = async (req, res) => {
 exports.getAllApartmentComplaints = async (req, res) => {
   try {
     const complaints = await Complaint.find({
-      apartmentId: req.user.apartmentId
+      apartmentId: req.user.apartmentId,
+      isActive: true,
     }).populate("raisedBy", "name mobile")
       .populate("flatId", "flatNumber floor")
       .sort({ createdAt: -1 });
@@ -194,6 +196,7 @@ exports.getApartmentBroadCast = async (req, res) => {
     const broadcasts = await Complaint.find({
       apartmentId: req.user.apartmentId,
       type: "broadcast",
+      isActive: true,
       createdAt: { $gte: last24Hours }   // 🔥 string comparison
     })
       .populate("raisedBy", "name mobile")
@@ -204,4 +207,31 @@ exports.getApartmentBroadCast = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+};
+
+
+/**
+ * DELETE COMPLAINT
+ */
+exports.deleteComplaint = async (req, res) => {
+    try {
+        const complaint = await Complaint.findOneAndUpdate(
+            {
+                _id: req.params.id,
+            },
+            { isActive: false },
+            { new: true }
+        );
+
+        if (!complaint) {
+            return res.status(404).json({
+                message: "Complaint/Broadcast not found"
+            });
+        }
+
+        res.json({ message: "Deleted successfully" });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };

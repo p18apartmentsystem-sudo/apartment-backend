@@ -62,7 +62,12 @@ const complaintSchema = new mongoose.Schema({
   createdAt: {
     type: String,
     required: true
-  }
+  },
+  
+  isActive: {
+    type: Boolean,
+    default: true
+  },
 
 });
 
