@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
-const moment = require("moment");
+const moment = require("moment-timezone");
 
 /**
  * ✅ CREATE APARTMENT ADMIN

@@ -1,5 +1,5 @@
 const Complaint = require("../models/Complaint");
-const moment = require("moment");
+const moment = require("moment-timezone");
 const NotificationService = require("../services/notification.service");
 
 

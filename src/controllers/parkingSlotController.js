@@ -1,5 +1,5 @@
 const ParkingSlot = require("../models/ParkingSlot");
-const moment = require("moment");
+const moment = require("moment-timezone");
 
 /**
  * ADD SINGLE PARKING SLOT

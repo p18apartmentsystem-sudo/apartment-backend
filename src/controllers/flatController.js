@@ -2,7 +2,7 @@ const Flat = require("../models/Flat");
 const User = require("../models/User");
 const FlatMemberMap = require("../models/FlatMemberMap");
 const bcrypt = require("bcryptjs");
-const moment = require("moment");
+const moment = require("moment-timezone");
 const mongoose = require("mongoose");
 
 

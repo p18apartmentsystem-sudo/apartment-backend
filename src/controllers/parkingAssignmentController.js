@@ -1,5 +1,5 @@
 const ParkingAssignmentMap = require("../models/ParkingAssignmentMap");
-const moment = require("moment");
+const moment = require("moment-timezone");
 
 /**
  * ASSIGN PARKING TO FLAT

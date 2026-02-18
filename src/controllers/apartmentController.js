@@ -1,6 +1,6 @@
 const Apartment = require("../models/Apartment");
 const User = require("../models/User");
-const moment = require("moment");
+const moment = require("moment-timezone");
 
 /**
  * CREATE Apartment

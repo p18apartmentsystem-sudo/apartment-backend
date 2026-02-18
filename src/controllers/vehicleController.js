@@ -1,6 +1,6 @@
 const Vehicle = require("../models/Vehicle");
 const User = require("../models/User");
-const moment = require("moment");
+const moment = require("moment-timezone");
 
 /**
  * ADD VEHICLE (flat_admin)

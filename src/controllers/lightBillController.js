@@ -1,5 +1,5 @@
 const LightBill = require("../models/LightBill");
-const moment = require("moment");
+const moment = require("moment-timezone");
 
 /**
  * UPLOAD LIGHT BILL (flat_admin)

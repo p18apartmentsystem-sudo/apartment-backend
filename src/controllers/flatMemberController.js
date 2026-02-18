@@ -1,7 +1,7 @@
 const FlatMemberMap = require("../models/FlatMemberMap");
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
-const moment = require("moment");
+const moment = require("moment-timezone");
 
 /**
  * ADD FLAT MEMBER (flat_admin)

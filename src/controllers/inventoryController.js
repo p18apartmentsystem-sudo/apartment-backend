@@ -1,5 +1,5 @@
 const Inventory = require("../models/Inventory");
-const moment = require("moment");
+const moment = require("moment-timezone");
 
 //ADD
 exports.addInventory = async (req, res) => {
