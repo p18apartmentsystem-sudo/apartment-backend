@@ -30,7 +30,7 @@ exports.raiseComplaint = async (req, res) => {
     await NotificationService.flatToApartment(
       req.user.apartmentId,
       "🚨 New Complaint Raised",
-      `New ${category} complaint from flat ${flatNumber}`,
+      `${category} complaint from flat ${flatNumber}`,
       "/apartment/updates"
     );
 

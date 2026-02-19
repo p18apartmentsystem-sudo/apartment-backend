@@ -9,7 +9,7 @@ const controller = require("../controllers/complaintController");
 router.post("/", auth, role("resident", "flat_admin"), controller.raiseComplaint);
 
 // get complaints of flat (flat_admin)
-router.get("/flat", auth, role("flat_admin"), controller.getFlatComplaints);
+router.get("/flat", auth, role("flat_admin", "resident"), controller.getFlatComplaints);
 
 // get my complaints (resident)
 router.get("/my", auth, role("flat_admin", "resident"), controller.getMyComplaints);
