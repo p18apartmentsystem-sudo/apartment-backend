@@ -55,11 +55,49 @@ exports.uploadLightBill = async (req, res) => {
  */
 exports.getFlatLightBills = async (req, res) => {
   try {
-    const bills = await LightBill.find({
-      flatId: req.user.flatId
-    });
+    const payments = await LightBill.aggregate([
+      {
+        $match: {
+          flatId: req.user.flatId
+        }
+      },
+      {
+        $addFields: {
+          monthOrder: {
+            $switch: {
+              branches: [
+                { case: { $eq: ["$month", "Jan"] }, then: 1 },
+                { case: { $eq: ["$month", "Feb"] }, then: 2 },
+                { case: { $eq: ["$month", "Mar"] }, then: 3 },
+                { case: { $eq: ["$month", "Apr"] }, then: 4 },
+                { case: { $eq: ["$month", "May"] }, then: 5 },
+                { case: { $eq: ["$month", "Jun"] }, then: 6 },
+                { case: { $eq: ["$month", "Jul"] }, then: 7 },
+                { case: { $eq: ["$month", "Aug"] }, then: 8 },
+                { case: { $eq: ["$month", "Sep"] }, then: 9 },
+                { case: { $eq: ["$month", "Oct"] }, then: 10 },
+                { case: { $eq: ["$month", "Nov"] }, then: 11 },
+                { case: { $eq: ["$month", "Dec"] }, then: 12 }
+              ],
+              default: 0
+            }
+          }
+        }
+      },
+      {
+        $sort: {
+          year: -1,
+          monthOrder: -1
+        }
+      },
+      {
+        $project: {
+          monthOrder: 0
+        }
+      }
+    ]);
 
-    res.json(bills);
+    res.json({ data: payments });
 
   } catch (err) {
     res.status(500).json({ error: err.message });
