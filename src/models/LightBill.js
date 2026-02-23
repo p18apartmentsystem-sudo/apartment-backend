@@ -34,7 +34,7 @@ const lightBillSchema = new mongoose.Schema({
     required: true
   },
 
-  billFile: {
+  proofFile: {
     type: String, // path
     required: true
   },
@@ -54,7 +54,13 @@ const lightBillSchema = new mongoose.Schema({
   createdAt: {
     type: String,
     required: true
-  }
+  },
+
+  add_status: {
+    type: String,
+    enum: ["self", "apartment_admin"],
+    default: "self"
+  },
 });
 
 

@@ -59,6 +59,7 @@ exports.getFlatDashboard = async (req, res) => {
     const openComplaints = await Complaint.countDocuments({
       flatId,
       status: { $ne: "resolved" },
+      isActive: true
     });
 
     res.status(200).json({
@@ -127,6 +128,19 @@ exports.getApartmentDashboard = async (req, res) => {
     const openComplaints = await Complaint.countDocuments({
       apartmentId,
       status: { $ne: "resolved" },
+      isActive: true
+    });
+
+    // 8 Paid rent verification
+    const paidRent = await RentPayment.countDocuments({
+      apartmentId,
+      status: "paid",
+    });
+
+    // 9 Paid light bill verification
+    const paidLightBills = await LightBill.countDocuments({
+      apartmentId,
+      status: "paid",
     });
 
     res.status(200).json({
@@ -137,6 +151,8 @@ exports.getApartmentDashboard = async (req, res) => {
       pendingRent,
       pendingLightBills,
       openComplaints,
+      paidRent,
+      paidLightBills
     });
   } catch (err) {
     console.error("APARTMENT DASHBOARD ERROR:", err);
@@ -180,7 +196,7 @@ async function getSummary() {
         $group: { _id: null, total: { $sum: "$amount" } },
       },
     ]),
-    Complaint.countDocuments({ status: { $ne: "resolved" } }),
+    Complaint.countDocuments({ status: { $ne: "resolved" }, isActive: true }),
   ]);
 
   return {

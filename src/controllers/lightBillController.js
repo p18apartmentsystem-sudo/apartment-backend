@@ -1,5 +1,6 @@
 const LightBill = require("../models/LightBill");
 const moment = require("moment-timezone");
+const mongoose = require("mongoose");
 
 /**
  * UPLOAD LIGHT BILL (flat_admin)
@@ -28,7 +29,7 @@ exports.uploadLightBill = async (req, res) => {
       month,
       year,
       amount,
-      billFile: req.file.path,
+      proofFile: req.file.path,
       createdAt: moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss")
     });
 
@@ -97,7 +98,7 @@ exports.verifyLightBill = async (req, res) => {
 
 /**
  * GET LIGHT BILL PAYMENTS (apartment_admin)
- * View all rent proofs for apartment
+ * View all proofs for apartment
  */
 exports.getApartmentLightBillPayments = async (req, res) => {
   try {
@@ -105,15 +106,33 @@ exports.getApartmentLightBillPayments = async (req, res) => {
       return res.status(403).json({ message: "Access denied" });
     }
 
-    const payments = await LightBill.find({
-      apartmentId: req.params.apartmentId
-    })
+    // ✅ Status filter (default = uploaded)
+    const { status } = req.query;
+    const billStatus = status || "uploaded";
+
+    // ✅ Validate allowed statuses
+    const allowedStatus = ["uploaded", "paid", "rejected"];
+    if (!allowedStatus.includes(billStatus)) {
+      return res.status(400).json({
+        message: "Invalid rent status"
+      });
+    }
+
+    // 🔍 Query object
+    const query = {
+      apartmentId: req.params.apartmentId,
+      status: billStatus
+    };
+
+    const payments = await LightBill.find(query)
       .populate("flatId", "flatNumber")
-      .populate("paidBy", "name mobile")
+      .populate("uploadedBy", "name mobile")
       .populate("verifiedBy", "name")
       .sort({ createdAt: -1 });
 
     res.json({
+      status: "success",
+      count: payments.length,
       data: payments
     });
 
@@ -131,13 +150,117 @@ exports.getLightBillPaymentById = async (req, res) => {
       _id: req.params.id,
     })
       .populate("flatId", "flatNumber")
-      .populate("paidBy", "name mobile");
+      .populate("uploadedBy", "name mobile");
 
     if (!payment) {
       return res.status(404).json({ message: "Payment not found" });
     }
 
     res.json(payment);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
+/**
+ * ADD LIGHT-BILL PAYMENT ("apartment_admin")
+ */
+exports.addLightBillPaymentByA_Admin = async (req, res) => {
+  try {
+    const { month, year, amount } = req.body;
+    let { apartmentId, flatId } = req.body;
+    // 🧼 Remove accidental quotes
+    if (typeof apartmentId === 'string') {
+      apartmentId = apartmentId.replace(/"/g, '');
+    }
+    if (typeof flatId === 'string') {
+      flatId = flatId.replace(/"/g, '');
+    }
+    // ✅ Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(flatId)) {
+      return res.status(400).json({
+        message: 'Invalid flatId'
+      });
+    }
+    if (!mongoose.Types.ObjectId.isValid(apartmentId)) {
+      return res.status(400).json({
+        message: 'Invalid apartmentId'
+      });
+    }
+
+    const exists = await LightBill.findOne({
+      flatId,
+      month,
+      year,
+    });
+
+    if (exists) {
+      return res.status(400).json({
+        message: "Light Bill already uploaded for this month"
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        message: "Payment proof is required"
+      });
+    }
+
+    const payment = await LightBill.create({
+      apartmentId,
+      flatId,
+      uploadedBy: req.user.userId,
+      month,
+      year,
+      amount,
+      proofFile: req.file.path,
+      add_status: "apartment_admin",
+      status: "paid",
+      verifiedBy: req.user.userId,
+      createdAt: moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss")
+    });
+
+    res.status(201).json({
+      message: "Ligh Bill payment uploaded",
+      payment: {
+        id: payment._id,
+        month,
+        year,
+        amount,
+        status: payment.status,
+        proofFile: payment.proofFile,
+        createdAt: payment.createdAt,
+      }
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * GET LIGHT BILL PAYMENTS ADDED BY = "apartment_admin" (apartment_admin)
+ * View all LIGHT Bill proofs for apartment
+ */
+exports.getLightBillPaymentAddedByA_ADMIN = async (req, res) => {
+  try {
+    if (req.user.role !== "apartment_admin") {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const payments = await LightBill.find({
+      apartmentId: req.params.apartmentId,
+      add_status: "apartment_admin"
+    })
+      .populate("flatId", "flatNumber")
+      .populate("uploadedBy", "name mobile")
+      .sort({ createdAt: -1 });
+
+    res.json({
+      data: payments
+    });
 
   } catch (err) {
     res.status(500).json({ error: err.message });
