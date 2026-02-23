@@ -41,9 +41,9 @@ exports.getFlatReport = async (req, res) => {
         status: flat.flatAdminId ? "occupied" : "vacant",
         flatAdmin: flat.flatAdminId
           ? {
-              name: flat.flatAdminId.name,
-              mobile: flat.flatAdminId.mobile
-            }
+            name: flat.flatAdminId.name,
+            mobile: flat.flatAdminId.mobile
+          }
           : null,
         flatMembers: membersCount,
         vehicles: vehiclesCount,
@@ -89,25 +89,67 @@ exports.getRentReport = async (req, res) => {
  */
 exports.getPendingPayments = async (req, res) => {
   try {
-    const pendingRent = await RentPayment.find({
-      apartmentId: req.user.apartmentId,
-      status: "uploaded"
-    }).populate("flatId", "flatNumber");
+    const { month, year } = req.query;
 
-    const pendingLight = await LightBill.find({
-      apartmentId: req.user.apartmentId,
-      status: "uploaded"
-    }).populate("flatId", "flatNumber meterNumber");
+    if (!month || !year) {
+      return res.status(400).json({ message: "Month and Year required" });
+    }
+
+    const apartmentId = req.user.apartmentId;
+
+    // 1️⃣ Get all occupied flats with flat admin details
+    const occupiedFlats = await Flat.find({
+      apartmentId,
+      isOccupied: true
+    }).populate("flatAdminId", "name mobile");
+
+    // 2️⃣ Get rent payments for that month/year
+    const rentPayments = await RentPayment.find({
+      apartmentId,
+      month,
+      year,
+      status: { $in: ["uploaded", "paid"] }
+    });
+
+    // 3️⃣ Get light bills for that month/year
+    const lightBills = await LightBill.find({
+      apartmentId,
+      month,
+      year,
+      status: { $in: ["uploaded", "paid"] }
+    });
+
+    // Convert to flatId string array
+    const rentFlatIds = rentPayments.map(r => r.flatId.toString());
+    const lightFlatIds = lightBills.map(l => l.flatId.toString());
+
+    const missingRent = [];
+    const missingLight = [];
+
+    // 4️⃣ Compare
+    for (const flat of occupiedFlats) {
+      const flatId = flat._id.toString();
+
+      const flatData = {
+        flat: flat.flatNumber,
+        flatAdminName: flat.flatAdminId?.name || null,
+        flatAdminMobile: flat.flatAdminId?.mobile || null
+      };
+
+      if (!rentFlatIds.includes(flatId)) {
+        missingRent.push(flatData);
+      }
+
+      if (!lightFlatIds.includes(flatId)) {
+        missingLight.push(flatData);
+      }
+    }
 
     res.json({
-      rent: pendingRent.map(r => ({
-        flat: r.flatId.flatNumber,
-        amount: r.amount
-      })),
-      lightBills: pendingLight.map(b => ({
-        flat: b.flatId.flatNumber,
-        amount: b.amount
-      }))
+      rent: missingRent,
+      lightBills: missingLight,
+      pending_rent: missingRent.length,
+      pending_lightbills: missingLight.length
     });
 
   } catch (err) {
@@ -212,9 +254,9 @@ exports.getVehicleReportDetailed = async (req, res) => {
         flat: vehicle.flatId.flatNumber,
         flatAdmin: flatAdmin
           ? {
-              name: flatAdmin.name,
-              mobile: flatAdmin.mobile
-            }
+            name: flatAdmin.name,
+            mobile: flatAdmin.mobile
+          }
           : null,
         vehicleOwner: {
           name: vehicle.userId.name,
@@ -222,10 +264,10 @@ exports.getVehicleReportDetailed = async (req, res) => {
         },
         parkingSlot: parking
           ? {
-              side: parking.parkingSlotId.side,
-              name: parking.parkingSlotId.name,
-              number: parking.parkingSlotId.slotNumber
-            }
+            side: parking.parkingSlotId.side,
+            name: parking.parkingSlotId.name,
+            number: parking.parkingSlotId.slotNumber
+          }
           : null
       });
     }
