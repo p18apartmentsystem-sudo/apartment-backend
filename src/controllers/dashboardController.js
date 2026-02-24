@@ -100,7 +100,7 @@ exports.getApartmentDashboard = async (req, res) => {
     // 2️⃣ Occupied flats
     const occupiedFlats = await Flat.countDocuments({
       apartmentId,
-      flatAdminId: { $ne: null },
+      isOccupied: true,
     });
 
     // 3️⃣ Vacant flats

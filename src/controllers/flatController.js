@@ -32,7 +32,8 @@ exports.addFlat = async (req, res) => {
 exports.getFlats = async (req, res) => {
     try {
         const flats = await Flat.find({
-            apartmentId: req.params.apartmentId
+            apartmentId: req.params.apartmentId,
+            isActive: true
         }).populate("flatAdminId", "name mobile");
         res.json({ data: flats });
     } catch (err) {
@@ -111,6 +112,56 @@ exports.getFlatsByFlatAdmin = async (req, res) => {
     }
 };
 
+/**
+ * GET Flats Members By Flat Id
+ */
+exports.getFlatMembersByFlatAdminID = async (req, res) => {
+  try {
+    const { flatId } = req.params;
+
+    // ✅ Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(flatId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid flatId"
+      });
+    }
+
+    // ✅ Get active members and populate user
+    const members = await FlatMemberMap.find({
+      flatId,
+      isActive: true
+    }).populate({
+      path: "userId",
+      select: "name mobile role email isActive"
+    });
+
+    // ✅ Format response (return only user details + joinedAt)
+    const formattedMembers = members.map(member => ({
+      _id: member.userId._id,
+      name: member.userId.name,
+      mobile: member.userId.mobile,
+      role: member.userId.role,
+      email: member.userId.email,
+      isActive: member.userId.isActive,
+      joinedAt: member.joinedAt,
+      leftAt: member.leftAt
+    }));
+
+    return res.status(200).json({
+      success: true,
+      count: formattedMembers.length,
+      data: formattedMembers
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 
 /**
  * UPDATE Flat
@@ -126,7 +177,6 @@ exports.updateFlat = async (req, res) => {
             return res.status(404).json({ message: "Apartment not found" });
         }
 
-        flat.isActive = true;
         flat.updatedAt = moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss");
         if (flatNumber) flat.flatNumber = flatNumber;
         if (floor) flat.floor = floor;
@@ -152,14 +202,40 @@ exports.deleteFlat = async (req, res) => {
         });
 
         if (!flat) {
-            return res.status(404).json({ message: "Apartment not found" });
+            return res.status(404).json({ message: "Flat not found" });
         }
 
+        flat.isActive = false;
         flat.updatedAt = moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss");
 
         await flat.save();
 
         res.json({ message: "Flat deleted" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+/**
+ * OCCUPIED Flat WO Admin
+ */
+exports.assignFlat = async (req, res) => {
+    try {
+
+        const flat = await Flat.findOne({
+            _id: req.params.id,
+        });
+
+        if (!flat) {
+            return res.status(404).json({ message: "Flat not found" });
+        }
+
+        flat.isOccupied = true;
+        flat.updatedAt = moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss");
+
+        await flat.save();
+
+        res.json({ message: "Flat Assign" });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -387,26 +463,26 @@ exports.getAllFlatsByApartmentFloor = async (req, res) => {
  * GET /flats/:id
  */
 exports.getFlatById = async (req, res) => {
-  try {
-    const { id } = req.params;
+    try {
+        const { id } = req.params;
 
-    // ✅ Validate flatId
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid flatId" });
+        // ✅ Validate flatId
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid flatId" });
+        }
+
+        const flat = await Flat.findById(id)
+            .populate("flatAdminId", "name mobile email");
+
+        if (!flat) {
+            return res.status(404).json({ message: "Flat not found" });
+        }
+
+        return res.status(200).json({
+            data: flat   // ✅ object (correct)
+        });
+
+    } catch (err) {
+        return res.status(500).json({ error: err.message });
     }
-
-    const flat = await Flat.findById(id)
-      .populate("flatAdminId", "name mobile email");
-
-    if (!flat) {
-      return res.status(404).json({ message: "Flat not found" });
-    }
-
-    return res.status(200).json({
-      data: flat   // ✅ object (correct)
-    });
-
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
-  }
 };
