@@ -33,7 +33,6 @@ exports.getFlats = async (req, res) => {
     try {
         const flats = await Flat.find({
             apartmentId: req.params.apartmentId,
-            isActive: true
         }).populate("flatAdminId", "name mobile");
         res.json({ data: flats });
     } catch (err) {
