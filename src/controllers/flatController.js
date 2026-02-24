@@ -11,13 +11,13 @@ const mongoose = require("mongoose");
  */
 exports.addFlat = async (req, res) => {
     try {
-        const { apartmentId, flatNumber, floor, rentAmount, meterNumber } = req.body;
+        const { apartmentId, flatNumber, floor, rentAmount, consumerNumber } = req.body;
         const flat = await Flat.create({
             apartmentId,
             flatNumber,
             floor,
             rentAmount,
-            meterNumber,
+            consumerNumber,
             createdAt: moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss")
         });
         res.status(201).json({ message: "Flat added", flat });
@@ -117,7 +117,7 @@ exports.getFlatsByFlatAdmin = async (req, res) => {
  */
 exports.updateFlat = async (req, res) => {
     try {
-        const { flatNumber, floor, rentAmount, meterNumber } = req.body;
+        const { flatNumber, floor, rentAmount, consumerNumber } = req.body;
         const flat = await Flat.findOne({
             _id: req.params.id,
         });
@@ -131,7 +131,7 @@ exports.updateFlat = async (req, res) => {
         if (flatNumber) flat.flatNumber = flatNumber;
         if (floor) flat.floor = floor;
         if (rentAmount) flat.rentAmount = rentAmount;
-        if (meterNumber) flat.meterNumber = meterNumber;
+        if (consumerNumber) flat.consumerNumber = consumerNumber;
 
         await flat.save();
 

@@ -17,7 +17,7 @@ const flatSchema = new mongoose.Schema({
     required: true
   },
 
-  meterNumber: {
+  consumerNumber: {
     type: Number,
     default: null
   },

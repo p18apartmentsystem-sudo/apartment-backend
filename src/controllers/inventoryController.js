@@ -44,7 +44,7 @@ exports.getApartmentInventory = async (req, res) => {
 
         const inventory = await Inventory.find({ apartmentId })
             .populate("addedBy", "name mobile")
-            .populate("flatId", "flatNumber floor rentAmount meterNumber isOccupied");
+            .populate("flatId", "flatNumber floor rentAmount consumerNumber isOccupied");
 
         res.json({ data: inventory });
     } catch (error) {
@@ -59,7 +59,7 @@ exports.getFlatInventory = async (req, res) => {
 
         const inventory = await Inventory.find({ flatId })
             .populate("addedBy", "name mobile")
-            .populate("flatId", "flatNumber floor rentAmount meterNumber isOccupied");
+            .populate("flatId", "flatNumber floor rentAmount consumerNumber isOccupied");
 
         res.json({ data: inventory });
     } catch (error) {
