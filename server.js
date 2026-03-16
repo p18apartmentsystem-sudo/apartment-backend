@@ -27,7 +27,7 @@ const profileRoutes = require("./src/routes/profileRoutes");
 const inventoryRoutes = require("./src/routes/inventoryRoutes");
 const pushTokenRoutes = require('./src/routes/push-token.routes');
 const notificationRoutes = require('./src/routes/notificationRoutes');
-
+const paymentRoutes = require('./src/routes/paymentRoutes');
 
 
 /* =======================
@@ -71,6 +71,7 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use('/api/push-token', pushTokenRoutes);
 app.use('/api/notification', notificationRoutes);
+app.use('/api/payment', paymentRoutes);
 
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
