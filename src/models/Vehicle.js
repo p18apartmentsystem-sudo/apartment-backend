@@ -21,7 +21,7 @@ const vehicleSchema = new mongoose.Schema({
 
   vehicleType: {
     type: String,
-    enum: ["2W", "4W"],
+    enum: ["2W", "4W", "3W", "OTHER"],
     required: true
   },
 
@@ -29,6 +29,10 @@ const vehicleSchema = new mongoose.Schema({
     type: String,
     required: true,
     uppercase: true
+  },
+
+  description: {
+    type: String,
   },
 
   isActive: {

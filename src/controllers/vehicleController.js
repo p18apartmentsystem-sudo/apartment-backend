@@ -8,12 +8,12 @@ const moment = require("moment-timezone");
  */
 exports.addVehicle = async (req, res) => {
     try {
-        const { userId, vehicleType, vehicleNumber } = req.body;
+        const { vehicleType, vehicleNumber, description } = req.body;
 
         // 1️⃣ Validate resident exists
-        const resident = await User.findById(userId);
+        const resident = await User.findById(req.user.userId);
 
-        if (!resident || resident.role !== "resident") {
+        if (!resident) {
             return res.status(400).json({
                 message: "Invalid resident user"
             });
@@ -32,9 +32,10 @@ exports.addVehicle = async (req, res) => {
         const vehicle = await Vehicle.create({
             apartmentId: req.user.apartmentId,
             flatId: req.user.flatId,
-            userId: resident._id,
+            userId: req.user.userId,
             vehicleType,
             vehicleNumber,
+            description,
             createdAt: moment(new Date()).tz("Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss")
         });
 
@@ -63,7 +64,33 @@ exports.getFlatVehicles = async (req, res) => {
             isActive: true
         }).populate("userId", "name mobile");
 
-        res.json(vehicles);
+        res.status(200).json({
+            success: true,
+            data: vehicles,
+            message: "Vehicles fetched successfully"
+        });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+/**
+ * GET ALL VEHICLES OF APARTMENT (a_admin)
+ */
+exports.getApartmentVehicles = async (req, res) => {
+    try {
+        const { apartmentId } = req.params;
+
+        const vehicles = await Vehicle.find({ apartmentId })
+            .populate("userId", "name mobile")
+            .populate("flatId", "flatNumber floor rentAmount consumerNumber isOccupied");
+
+        res.status(200).json({
+            success: true,
+            data: vehicles,
+            message: "Vehicles fetched successfully"
+        });
 
     } catch (err) {
         res.status(500).json({ error: err.message });
