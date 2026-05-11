@@ -98,6 +98,30 @@ exports.getApartmentVehicles = async (req, res) => {
 };
 
 /**
+ * GET ALL DETAILS BY VEHICLE NUMBER (a_admin)
+ */
+exports.getDetailsByVehicle = async (req, res) => {
+    try {
+
+        const vehicleNumber = req.body.vehicleNumber
+        const vehicles = await Vehicle.find({
+            vehicleNumber: vehicleNumber,
+        })
+        .populate("flatId", "flatNumber floor rentAmount consumerNumber isOccupied")
+        .populate("userId", "name mobile");
+
+        res.status(200).json({
+            success: true,
+            data: vehicles,
+            message: "Vehicles fetched successfully"
+        });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+/**
  * GET MY VEHICLES (resident)
  */
 exports.getMyVehicles = async (req, res) => {
